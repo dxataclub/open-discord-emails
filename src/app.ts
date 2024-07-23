@@ -1,16 +1,52 @@
 import "dotenv/config"
-import { Client, GatewayIntentBits, Events } from 'discord.js';
+import { Client, GatewayIntentBits, Events, EmbedBuilder, TextChannel } from 'discord.js';
 import startEmailWatch from "./email.js";
 import chalk from "chalk";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages]})
+const CHANNEL_ID = '1265180682741743658';
+const ROLE_ID = '1265180425152626768';
 
-async function received() {
+async function received(author, subject, body, attachments) {
+    const emailEmbed = new EmbedBuilder()
+        .setAuthor({ name: `${author.name} <${author.address}>`, iconURL: 'https://cdn3.emoji.gg/emojis/7816-mail.png' })
+        .setTitle(subject)
+        .setDescription(`${body}\n\n<@&${ROLE_ID}>`)
+        .setFooter({ text: `${attachments.length} Attachments.${attachments.length > 0 ? ' Open email in client to download.' : ''}`, iconURL: 'https://cdn-icons-png.freepik.com/512/3756/3756616.png' });
+    
+    try {
+        const channel = await client.channels.cache.get(CHANNEL_ID)
+        if (channel && channel.isTextBased()) {
+            await (channel as TextChannel).send({ embeds: [emailEmbed] });
+        }
+        else {
+            throw 'Channel ID provided is not a text channel or does not exist.'
+        }
 
+        console.log(`you got mail! 💻📨 (from ${author.address})`)
+    }
+    catch (sendErr) {
+        console.error(`Could not send an email from ${author.address} in discord due to an error: ${sendErr}.\nThis may be due to Discord itself or a connection issue.`)
+    }
 }
 
 async function readFail() {
+    const emailEmbed = new EmbedBuilder()
+        .setColor(0xf25a5a)
+        .setDescription('An email was received but could not be read; it can be viewed in the email client.')
 
+    try {
+        const channel = await client.channels.cache.get(CHANNEL_ID)
+        if (channel && channel.isTextBased()) {
+            await (channel as TextChannel).send({ embeds: [emailEmbed] });
+        }
+        else {
+            throw 'Channel ID provided is not a text channel or does not exist.'
+        }
+    }
+    catch (sendErr) {
+        console.error(`Could not send an error notification in discord due to an error: ${sendErr}.\nThis may be due to Discord itself or a connection issue.`)
+    }
 }
 
 async function connectFail() {
