@@ -64,8 +64,10 @@ client.on(Events.ClientReady, async () => {
 })
 
 client.on(Events.MessageCreate, async msg => {
-    console.log(msg);
-
+    if (msg.channel.isThread()) {
+        await msg.react('✅');
+        console.log(`Sent email with content: ${msg.content}`);
+    }
 })
 
 client.on(Events.ShardError, () => {
