@@ -7,6 +7,7 @@ const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBit
 const CHANNEL_ID = '1265180682741743658';
 const ROLE_ID = '1265180425152626768';
 
+
 async function received(author, subject, body, attachments) {
     const emailEmbed = new EmbedBuilder()
         .setAuthor({ name: `${author.name} <${author.address}>`, iconURL: 'https://cdn3.emoji.gg/emojis/7816-mail.png' })
@@ -60,6 +61,11 @@ async function connected() {
 
 client.on(Events.ClientReady, async () => {
     startEmailWatch(connected, received, readFail, connectFail)
+})
+
+client.on(Events.MessageCreate, async msg => {
+    console.log(msg);
+
 })
 
 client.on(Events.ShardError, () => {
