@@ -11,13 +11,13 @@ async function received(author, subject, body, attachments) {
     const emailEmbed = new EmbedBuilder()
         .setAuthor({ name: `${author.name} <${author.address}>`, iconURL: 'https://cdn3.emoji.gg/emojis/7816-mail.png' })
         .setTitle(subject)
-        .setDescription(`${body}\n\n<@&${ROLE_ID}>`)
+        .setDescription(body)
         .setFooter({ text: `${attachments.length} Attachments.${attachments.length > 0 ? ' Open email in client to download.' : ''}`, iconURL: 'https://cdn-icons-png.freepik.com/512/3756/3756616.png' });
     
     try {
         const channel = await client.channels.cache.get(CHANNEL_ID)
         if (channel && channel.isTextBased()) {
-            await (channel as TextChannel).send({ embeds: [emailEmbed] });
+            await (channel as TextChannel).send({ content: `<@&${ROLE_ID}>`, embeds: [emailEmbed] });
         }
         else {
             throw 'Channel ID provided is not a text channel or does not exist.'
@@ -38,7 +38,7 @@ async function readFail() {
     try {
         const channel = await client.channels.cache.get(CHANNEL_ID)
         if (channel && channel.isTextBased()) {
-            await (channel as TextChannel).send({ embeds: [emailEmbed] });
+            await (channel as TextChannel).send({ content: `<@&${ROLE_ID}>`, embeds: [emailEmbed] });
         }
         else {
             throw 'Channel ID provided is not a text channel or does not exist.'

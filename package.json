@@ -1,7 +1,8 @@
 {
   "type": "module",
   "scripts": {
-    "dev": "tsx ./src/app.ts"
+    "dev": "tsx ./src/app.ts",
+    "build": "tsc"
   },
   "devDependencies": {
     "tsx": "^4.16.2",
