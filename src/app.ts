@@ -1,34 +1,33 @@
 import "dotenv/config"
 import { Client, GatewayIntentBits, Events } from 'discord.js';
-import Imap from 'imap';
+import startEmailWatch from "./email.js";
+import chalk from "chalk";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages]})
-const host = process.env.HOST || 'imap.gmail.com'
-const port = process.env.PORT || 993
-const imap = new Imap({
-    user: process.env.EMAIL,
-    password: process.env.PASSWORD,
-    host,
-    port,
-    tls: true,
-    tlsOptions: {
-        rejectUnauthorized: false
-    },
-  });
+
+async function received() {
+
+}
+
+async function readFail() {
+
+}
+
+async function connectFail() {
+    console.error('Attempting to reconnect to email.. ensure your credentials and connection are okay.')
+}
+
+async function connected() {
+    await client.user.setActivity("Receiving Emails..");
+    console.log(chalk.green(`Open Discord Emails, App Running 👾\nListening to emails on 📨 ${process.env.EMAIL}\n`));
+}
 
 client.on(Events.ClientReady, async () => {
-    await client.user.setActivity("Receiving Emails");
-    console.log('Open Discord Emails, App Running.');
+    startEmailWatch(connected, received, readFail, connectFail)
 })
 
-client.on(Events.MessageCreate, async msg => {
-    console.log(msg);
+client.on(Events.ShardError, () => {
+    console.error('An issue occured, but the app is stil running. Discord or your connection may be experiencing issues.')
 })
 
-imap.on('ready', () => {
-    console.log('email connected');
-})
-
-console.log(process.env.EMAIL, process.env.PASSWORD)
-imap.connect();
 client.login(process.env.DISCORD);
