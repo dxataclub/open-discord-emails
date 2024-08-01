@@ -30,10 +30,10 @@ function handleMail(emailCb, emailReadErr) {
                 })
             });
 
-            // msg.once('attributes', function (attrs) {
-            //     const { uid } = attrs;
-            //     imap.addFlags(uid, ['\\Seen']);
-            // })
+            msg.once('attributes', function (attrs) {
+                const { uid } = attrs;
+                imap.addFlags(uid, ['\\Seen']);
+            })
         })
 
         f.once('error', err => {

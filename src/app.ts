@@ -5,7 +5,7 @@ import chalk from "chalk";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages]})
 const CHANNEL_ID = '1265180682741743658';
-const ROLE_ID = '1265180425152626768';
+const ROLE_ID = '1265180425152626768kk';
 
 
 async function received(author, subject, body, attachments) {
