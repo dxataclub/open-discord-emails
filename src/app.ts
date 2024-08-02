@@ -5,7 +5,10 @@ import chalk from "chalk";
 
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages]})
 const CHANNEL_ID = '1265180682741743658';
-const ROLE_ID = '1265180425152626768kk';
+const ROLE_ID = '1265180425152626768';
+
+const READY_IND = '(reply to email by replying to msg)';
+const DONE_IND = '*(email replied to)*';
 
 async function received(author, subject, body, attachments) {
     const emailEmbed = new EmbedBuilder()
@@ -21,7 +24,7 @@ async function received(author, subject, body, attachments) {
             throw 'Channel ID provided is not a text channel or does not exist.'
         }
 
-        await mainChannel.send({ content: `<@&${ROLE_ID}>`, embeds: [emailEmbed] });
+        await mainChannel.send({ content: `<@&${ROLE_ID}> ${READY_IND}`, embeds: [emailEmbed] });
         console.log(`you got mail! 💻📨 (from ${author.address})`)
     }
     catch (sendErr) {
@@ -64,22 +67,18 @@ client.on(Events.ClientReady, async () => {
 client.on(Events.MessageCreate, async msg => {
     const ref = msg.reference;
 
+    if (!ref)
+        return;
+
     try {
         if (!msg.author.bot && msg.author.id !== client.user.id && ref.channelId === CHANNEL_ID) {
             const refMsg = await msg.channel.messages.fetch(ref.messageId)
-            const thread = msg.channel;
-    
-            if (thread.parentId !== CHANNEL_ID)
-                return;
-    
+
+            if (refMsg.author.id !== client.user.id || !refMsg.content.endsWith(READY_IND))
+                return
+
             const mainChannel: TextChannel = client.channels.cache.get(CHANNEL_ID) as TextChannel;
-    
-            if (!mainChannel || !mainChannel.isTextBased()) {
-                throw 'Channel ID provided is not a text channel or does not exist.'
-            }
-    
-            const emailMsg = await mainChannel.messages.fetch(thread.id);
-            const prevEmail = emailMsg.embeds[0].data;
+            const prevEmail = refMsg.embeds[0].data;
             let atag = prevEmail.author.name.split('<');
     
             const subject = prevEmail.title;
@@ -87,14 +86,14 @@ client.on(Events.MessageCreate, async msg => {
     
             await sendMail(author, `Re: ${subject}`, msg.content);
     
-            msg.channel.send("Sent");
-            //await msg.react('✅');
-            //await msg.reply(`Reply sent. This thread will not reply to emails anymore.`)
-            // console.log(`Sent email with content: ${msg.content}`);
+            await refMsg.edit(`<@&${ROLE_ID}> ${DONE_IND}`)
+            await msg.react('✅');
+            await msg.reply(`Reply sent.`);
+            console.log(`@${msg.author.globalName} replied to email (subj: ${subject}) from ${prevEmail.author.name}`);
         }
     }
     catch (replyErr) {
-        console.error(`Could not handle potential email reply due to error: ${sendErr}.\nThis may be due to Discord itself or a connection issue/program bug.`)
+        console.error(`Could not handle potential email reply due to error: ${replyErr}.\nThis may be due to Discord itself or a connection issue/program bug.`)
     }
 })
 
