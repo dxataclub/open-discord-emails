@@ -1,5 +1,6 @@
 import Imap from 'imap';
 import { simpleParser } from 'mailparser';
+import nodemailer from 'nodemailer';
 
 const host = process.env.HOST || 'imap.gmail.com'
 const port = process.env.PORT || 993
@@ -14,6 +15,33 @@ const imap = new Imap({
         rejectUnauthorized: false
     },
 });
+
+const transporter = nodemailer.createTransport({
+    service: process.env.SENDING_SERVICE ?? 'gmail',
+    auth: {
+      user: process.env.EMAIL,
+      pass: process.env.PASSWORD
+    }
+});
+
+export function sendMail(to: string, subject: string, text: string) {
+    return new Promise((res, rej) => {
+        const reply = {
+            from: process.env.EMAIL,
+            to,
+            subject,
+            text
+        };
+    
+        transporter.sendMail(reply, (error, info) => {
+            if (error)
+              rej(error)
+
+            res(info.messageId)
+        });
+    });
+}
+
 
 function handleMail(emailCb, emailReadErr) {
     imap.search(['UNSEEN'], (err, results) => {
