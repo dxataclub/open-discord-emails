@@ -86,10 +86,21 @@ client.on(Events.MessageCreate, async msg => {
     
             await sendMail(author, `Re: ${subject}`, msg.content);
     
+            const successEmbed = new EmbedBuilder()
+                .setColor(0x6dd164)
+                .setDescription('Reply was sent. Further replies can only be made to new emails.');
+                
             await refMsg.edit(`<@&${ROLE_ID}> ${DONE_IND}`)
             await msg.react('✅');
-            await msg.reply(`Reply sent.`);
+            const successMsg = await msg.reply({ embeds: [successEmbed] });
             console.log(`@${msg.author.globalName} replied to email (subj: ${subject}) from ${prevEmail.author.name}`);
+
+            setTimeout(async () => {
+                try {
+                    await successMsg.delete();
+                }
+                catch {}
+            }, 6000);
         }
     }
     catch (replyErr) {
